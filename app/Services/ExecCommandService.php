@@ -7,8 +7,10 @@ use App\Services\Interfaces\ExecCommandServiceInterface;
 class ExecCommandService implements ExecCommandServiceInterface
 {
 
-    public function exec(string $command)
+    public function exec(string $command): array
     {
-        // TODO: Implement exec() method.
+        exec($command, $output);
+
+        return $output;
     }
 }

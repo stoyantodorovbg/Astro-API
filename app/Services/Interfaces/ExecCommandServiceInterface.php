@@ -9,7 +9,7 @@ interface ExecCommandServiceInterface
      * Return the data from it
      *
      * @param string $command
-     * @return mixed
+     * @return array
      */
-    public function exec(string $command);
+    public function exec(string $command): array;
 }
