@@ -2,10 +2,11 @@
 
 namespace App\Services;
 
-use App\Services\Interfaces\ConvertDateServiceInterface;
 use Illuminate\Support\Carbon;
+use App\Services\Interfaces\ConvertDateServiceInterface;
+use App\Services\Interfaces\ServiceInterface;
 
-class ConvertDateService implements ConvertDateServiceInterface
+class ConvertDateService implements ServiceInterface, ConvertDateServiceInterface
 {
 
     public function createCarbonFromString(string $date, string $format): Carbon
