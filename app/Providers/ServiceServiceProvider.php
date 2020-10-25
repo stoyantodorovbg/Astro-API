@@ -2,15 +2,15 @@
 
 namespace App\Providers;
 
-use App\Services\ConvertDateService;
-use App\Services\GenerateCommandService;
-use App\Services\ExecCommandService;
-use App\Services\Interfaces\ConvertDateServiceInterface;
-use App\Services\Interfaces\GenerateCommandServiceInterface;
-use App\Services\Interfaces\ExecCommandServiceInterface;
-use App\Services\Interfaces\ValidationServiceInterface;
 use App\Services\ValidationService;
+use App\Services\ConvertDateService;
+use App\Services\ExecCommandService;
 use Illuminate\Support\ServiceProvider;
+use App\Services\GenerateCommandService;
+use App\Services\Interfaces\ValidationServiceInterface;
+use App\Services\Interfaces\ConvertDateServiceInterface;
+use App\Services\Interfaces\ExecCommandServiceInterface;
+use App\Services\Interfaces\GenerateCommandServiceInterface;
 
 class ServiceServiceProvider extends ServiceProvider
 {
@@ -21,6 +21,11 @@ class ServiceServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->app->bind(ConvertDateServiceInterface::class, ConvertDateService::class);
+        $this->app->bind(GenerateCommandServiceInterface::class, GenerateCommandService::class);
+        $this->app->bind(ExecCommandServiceInterface::class, ExecCommandService::class);
+        $this->app->bind(ConvertDateServiceInterface::class, ConvertDateService::class);
+        $this->app->bind(ValidationServiceInterface::class, ValidationService::class);
     }
 
     /**
@@ -30,10 +35,5 @@ class ServiceServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->app->bind(ConvertDateServiceInterface::class, ConvertDateService::class);
-        $this->app->bind(GenerateCommandServiceInterface::class, GenerateCommandService::class);
-        $this->app->bind(ExecCommandServiceInterface::class, ExecCommandService::class);
-        $this->app->bind(ConvertDateServiceInterface::class, ConvertDateService::class);
-        $this->app->bind(ValidationServiceInterface::class, ValidationService::class);
     }
 }

@@ -48,6 +48,8 @@ class GenerateCommandService implements ServiceInterface, GenerateCommandService
         'bary',
         'topo',
         'f',
+        's',
+        'n'
     ];
 
     /**
@@ -73,7 +75,7 @@ class GenerateCommandService implements ServiceInterface, GenerateCommandService
             'acceptableArguments' => $arguments,
         ];
 
-        if ($validationService->checkInputs($this, $validationData)) {
+        if ($validationService->containsExactValues($this, $validationData)) {
             if ($options) {
                 foreach ($options as $key => $value) {
                     $command .= ' -' . $key . $value;

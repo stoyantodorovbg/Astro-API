@@ -18,7 +18,7 @@ class ValidationService implements ServiceInterface, ValidationServiceInterface
     {
         foreach ($data as $key => $values) {
             foreach ($values as $value) {
-                if ($this->checkInput($service, $value, $key)) {
+                if (!$this->containsExactValue($service, $value, $key)) {
                     return false;
                 }
             }
@@ -38,9 +38,9 @@ class ValidationService implements ServiceInterface, ValidationServiceInterface
     public function containsExactValue(ServiceInterface $service, string $input, string $type): bool
     {
         if (!in_array($input, $service->$type, true)) {
-            return true;
+            return false;
         }
 
-        return false;
+        return true;
     }
 }

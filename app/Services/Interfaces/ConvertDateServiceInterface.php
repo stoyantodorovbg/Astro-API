@@ -11,17 +11,18 @@ interface ConvertDateServiceInterface
      *
      * @param string $date
      * @param string $format
-     * @return Carbon
+     * @param string $timeZone
+     * @return mixed
      */
-    public function createCarbonFromString(string $date, string $format): Carbon;
+    public function createCarbonFromString(string $date, string $format = 'Y-m-d H:i:s', $timeZone = 'UTC');
 
     /**
      * Convert a Carbon instance to julian date number
      *
-     * @param Carbon $dateTime
+     * @param $dateTime
      * @return float
      */
-    public function convertToJulianNumeric(Carbon $dateTime): float;
+    public function convertToJulianNumeric($dateTime): float;
 
     /**
      * Convert an Carbon instance by given time zone
@@ -31,4 +32,13 @@ interface ConvertDateServiceInterface
      * @return Carbon
      */
     public function convertByTimeZone(Carbon $dateTime, string $timeZone = 'UTC'): Carbon;
+
+    /**
+     * Get a formated string from carbon instance
+     *
+     * @param Carbon $carbon
+     * @param string $format
+     * @return string
+     */
+    public function formatCarbon(Carbon $carbon, string $format = 'm/d/Y H:i:s'): string;
 }
