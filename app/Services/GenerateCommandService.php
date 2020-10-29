@@ -68,14 +68,13 @@ class GenerateCommandService implements ServiceInterface, GenerateCommandService
      */
     public function generateCommand(string $command, array $options = [], array $arguments = [])
     {
-        $validationService = resolve(ValidationServiceInterface::class);
         $validationData = [
             'acceptableCommands'  => [$command],
             'acceptableOptions'   => array_keys($options),
             'acceptableArguments' => $arguments,
         ];
 
-        if ($validationService->containsExactValues($this, $validationData)) {
+        if (resolve(ValidationServiceInterface::class)->containsExactValues($this, $validationData)) {
             if ($options) {
                 foreach ($options as $key => $value) {
                     $command .= ' -' . $key . $value;
