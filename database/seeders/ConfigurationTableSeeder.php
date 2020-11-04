@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\Data;
+use App\Models\Configuration;
 use Illuminate\Database\Seeder;
 
-class DataTableSeeder extends Seeder
+class ConfigurationTableSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -14,6 +14,6 @@ class DataTableSeeder extends Seeder
      */
     public function run()
     {
-        Data::factory()->count(5)->create();
+        Configuration::factory()->count(5)->create();
     }
 }

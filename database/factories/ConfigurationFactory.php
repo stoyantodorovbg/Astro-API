@@ -2,17 +2,17 @@
 
 namespace Database\Factories;
 
-use App\Models\Data;
+use App\Models\Configuration;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class DataFactory extends Factory
+class ConfigurationFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = Data::class;
+    protected $model = Configuration::class;
 
     /**
      * Define the model's default state.
@@ -23,8 +23,10 @@ class DataFactory extends Factory
     public function definition()
     {
         return [
-            'key'  => $this->faker->sentence,
-            'data' => json_encode([
+            'name'        => $this->faker->unique()->word(),
+            'description' => $this->faker->text,
+            'command'     => $this->faker->words(5, true),
+            'options'     => json_encode([
                 $this->faker->word => $this->faker->word
             ], JSON_THROW_ON_ERROR),
         ];
