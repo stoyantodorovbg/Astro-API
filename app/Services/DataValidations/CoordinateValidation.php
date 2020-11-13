@@ -2,12 +2,12 @@
 
 namespace App\Services\DataValidations;
 
-class CoordinatesValidation extends DataValidation
+class CoordinateValidation extends DataValidation
 {
     /**
      * @var string
      */
-    protected string $regex = '/^\d+\.\d+,\d+\.\d+$/';
+    protected string $regex = '/^\d+\.\d+$/';
 
     /**
      * Check if the given data is valid

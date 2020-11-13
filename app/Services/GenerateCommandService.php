@@ -83,7 +83,7 @@ class GenerateCommandService implements ServiceInterface, GenerateCommandService
 
             if ($arguments) {
                 foreach ($arguments as $argument) {
-                    $command .= ' -' . $argument;
+                    $command .= ' ' . $argument;
                 }
             }
 
