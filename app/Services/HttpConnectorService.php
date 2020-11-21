@@ -11,18 +11,18 @@ class HttpConnectorService implements HttpConnectorServiceInterface
     /**
      * Connects HTTP parameters to Swetest options and validated theirs values
      * Returns an array with options for Swetest command
-     * Returns ann array with key "error" when something when wrong
+     * Returns an array with key "error" when something when wrong
      *
-     * @param Request $request
+     * @param array $options
      * @return array
      */
-    public function connectOptions(Request $request): array
+    public function connectSwetestOptions(array $options): array
     {
         $connectedOptions = [];
         $optionsKeys = config('swetest.httpMapping.optionsKeys');
         $validationsOptions = config('swetest.validations.options');
 
-        foreach ($request->validated() as $parameterKey => $parameterValues) {
+        foreach ($options as $parameterKey => $parameterValues) {
             // Check for Swetest parameters
             if (in_array($parameterKey, $optionsKeys, true) &&
                 ($swetestOption = $optionsKeys[$parameterKey]) &&
@@ -54,7 +54,7 @@ class HttpConnectorService implements HttpConnectorServiceInterface
 
                         if (!$dataValidation->isValid($parameterValue)) {
                             return [
-                                'error' => "$key HTTP option has not valid value. The error has been found in $dataValidationClass class."
+                                'error' => "$key HTTP option has not valid value."
                             ];
                         }
 
