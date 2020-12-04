@@ -8,20 +8,46 @@ use App\Services\Interfaces\GenerateCommandServiceInterface;
 
 class DataController extends Controller
 {
-    public function getData(GetDataRequest $request,
-                            HttpConnectorServiceInterface $httpConnectorService,
-                            GenerateCommandServiceInterface $generateCommandService)
+    /**
+     * @var HttpConnectorServiceInterface
+     */
+    protected HttpConnectorServiceInterface $httpConnectorService;
+
+    /**
+     * @var GenerateCommandServiceInterface
+     */
+    protected GenerateCommandServiceInterface $generateCommandService;
+
+    /**
+     * DataController constructor.
+     *
+     * @param HttpConnectorServiceInterface $httpConnectorService
+     * @param GenerateCommandServiceInterface $generateCommandService
+     */
+    public function __construct(HttpConnectorServiceInterface $httpConnectorService, GenerateCommandServiceInterface $generateCommandService)
     {
+        $this->httpConnectorService = $httpConnectorService;
+        $this->generateCommandService = $generateCommandService;
+    }
+
+    public function getData(GetDataRequest $request)
+    {
+        $dataQueries = json_decode($request->dataQueries, true, 512, JSON_THROW_ON_ERROR);
         $data = [];
-        foreach ($request->dataQueries as $dataQuery) {
-            $swetestOptions = $httpConnectorService->connectSwetestOptions($dataQuery);
+        foreach ($dataQueries as $dataQuery) {
+            $swetestOptions = $this->httpConnectorService->connectSwetestOptions($dataQuery);
 
             if (isset($swetestOptions['error'])) {
                 return response($swetestOptions['error'], 422);
             }
 
-            $command = $generateCommandService->generateCommand('swetest', $swetestOptions);
-            $data[] = exec($command, $output);
+            $command = $this->generateCommandService->generateCommand('swetest', $swetestOptions);
+            if ($command) {
+                exec($command, $output);
+                $data[] = $output;
+            } else {
+                $data[] = 'Not valid data have been received.';
+            }
         }
 
         return response($data, 200);

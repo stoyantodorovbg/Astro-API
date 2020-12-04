@@ -26,9 +26,6 @@ class ConfigurationFactory extends Factory
             'name'        => $this->faker->unique()->word(),
             'description' => $this->faker->text,
             'command'     => $this->faker->words(5, true),
-            'options'     => json_encode([
-                $this->faker->word => $this->faker->word
-            ], JSON_THROW_ON_ERROR),
         ];
     }
 }

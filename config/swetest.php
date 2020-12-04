@@ -11,7 +11,7 @@ return [
     */
     'validations' => [
         'options' => [
-            'b'     => ['julianDate'],
+            'bj'    => ['julianDate'],
             'p'     => ['planets'],
             'house' => ['coordinate', 'coordinate', 'houseTypes'],
             'sid'   => ['siderealMethods'],
@@ -27,7 +27,7 @@ return [
     */
     'httpMapping' => [
         'optionsKeys'                => [
-            'date'                   => 'b',
+            'date'                   => 'bj',
             'planets'                => 'p',
             'houses'                 => 'house',
             'sidereal'               => 'sid',

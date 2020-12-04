@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Services\Interfaces\ConvertDateServiceInterface;
-use Illuminate\Http\Request;
 use App\Services\Interfaces\HttpConnectorServiceInterface;
 
 class HttpConnectorService implements HttpConnectorServiceInterface
@@ -21,44 +20,44 @@ class HttpConnectorService implements HttpConnectorServiceInterface
         $connectedOptions = [];
         $optionsKeys = config('swetest.httpMapping.optionsKeys');
         $validationsOptions = config('swetest.validations.options');
+        $optionsValues = config('swetest.httpMapping.optionsValues');
 
         foreach ($options as $parameterKey => $parameterValues) {
             // Check for Swetest parameters
-            if (in_array($parameterKey, $optionsKeys, true) &&
+            if (array_key_exists($parameterKey, $optionsKeys) &&
                 ($swetestOption = $optionsKeys[$parameterKey]) &&
                 array_key_exists($swetestOption, $validationsOptions)
             ) {
                 $parameterValuesData = explode(',', $parameterValues);
                 $processedParameterValue = '';
-
                 // Converts to Julian date
-                if ($swetestOption === 'b') {
-                    $processedParameterValue = resolve(ConvertDateServiceInterface::class)->convertToJulianNumeric($validationsOptions);
+                if ($swetestOption === 'bj') {
+                    $processedParameterValue = resolve(ConvertDateServiceInterface::class)->convertToJulianNumeric($parameterValues);
                 }
-
-                foreach ($parameterValuesData as $key => $parameterValue){
-                    $dataValidationClass = $swetestOption[$key];
+                foreach ($parameterValuesData as $key => $parameterValue) {
+                   // dump($parameterValue);
+                    $dataValidationClasses = $validationsOptions[$swetestOption];
 
                     // Check if there is a validation for the option
-                    if ($dataValidationClass && array_key_exists($dataValidationClass, $optionsKeys)) {
+                    foreach($dataValidationClasses as $dataValidationClass) {
+                        if ($dataValidationClass && array_key_exists($dataValidationClass, $optionsKeys)) {
+                            // Convert the HTTP option value to Swetest option value
+                            $parameterOptionValues = explode('-', $parameterValue);
+                            foreach ($parameterOptionValues as $parameterOptionValue) {
+                                //dd($optionsKeys, $parameterOptionValue, $swetestOption);
+                                $processedParameterValue .= $optionsValues[$parameterKey][$parameterValue];
+                            }
 
-                        // Convert the HTTP option value to Swetest option value
-                        $parameterOptionValues = explode('-', $parameterValue);
-                        foreach ($parameterOptionValues as $parameterOptionValue) {
-                            $processedParameterValue .= $optionsKeys[$parameterOptionValue];
+                            // Validate Swetest option
+                            $dataValidationClass = ucfirst($dataValidationClass) . 'Validation';
+                            $dataValidation = resolve("\\App\\Services\\DataValidations\\$dataValidationClass");
+
+                            if (!$dataValidation->isValid($swetestOption)) {
+                                return [
+                                    'error' => "$parameterKey HTTP option has not valid value."
+                                ];
+                            }
                         }
-
-                        // Validate Swetest option
-                        $dataValidationClass = strtoupper($dataValidationClass);
-                        $dataValidation = resolve("\\App\\Services\\DataValidations\\$dataValidationClass");
-
-                        if (!$dataValidation->isValid($parameterValue)) {
-                            return [
-                                'error' => "$key HTTP option has not valid value."
-                            ];
-                        }
-
-                        $processedParameterValue = $parameterValue;
                     }
                 }
 

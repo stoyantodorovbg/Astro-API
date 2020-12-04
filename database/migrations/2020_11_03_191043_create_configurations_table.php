@@ -18,7 +18,6 @@ class CreateConfigurationsTable extends Migration
             $table->string('name')->unique();
             $table->text('description')->nullable();
             $table->string('command');
-            $table->json('options')->nullable();
             $table->timestamps();
         });
     }

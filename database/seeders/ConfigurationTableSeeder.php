@@ -14,6 +14,11 @@ class ConfigurationTableSeeder extends Seeder
      */
     public function run()
     {
-        Configuration::factory()->count(5)->create();
+        Configuration::updateOrCreate([
+            'name' => 'Houses and Planets'
+        ], [
+            'description' => 'Get houses and planets data.',
+            'command'     => 'swetest -b -p -house -ut',
+        ]);
     }
 }
