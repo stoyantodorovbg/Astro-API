@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Services\Interfaces\ServiceInterface;
-use App\Services\Interfaces\GenerateCommandServiceInterface;
 use App\Services\Interfaces\ValidationServiceInterface;
+use App\Services\Interfaces\GenerateCommandServiceInterface;
 
 class GenerateCommandService implements ServiceInterface, GenerateCommandServiceInterface
 {
@@ -91,5 +91,29 @@ class GenerateCommandService implements ServiceInterface, GenerateCommandService
         }
 
         return false;
+    }
+
+    /**
+     * Add values to an option
+     *
+     * @param $swetestOption
+     * @param array $parameterValuesData
+     * @param array $optionsValues
+     * @param string $parameterKey
+     * @return string
+     */
+    public function addOptionValues($swetestOption, array $parameterValuesData, array $optionsValues, string $parameterKey): string
+    {
+        $optionValue = '';
+        $prefix = $swetestOption === 'house' || $swetestOption === 'topo' ? ',' : '';
+        foreach ($parameterValuesData as $parameter) {
+            if (isset($optionsValues[$parameterKey]) && isset($optionsValues[$parameterKey][$parameter])) {
+                $optionValue .= $optionsValues[$parameterKey][$parameter] . $prefix;
+            } else {
+                $optionValue .= $parameter . $prefix;
+            }
+        }
+
+        return $optionValue;
     }
 }

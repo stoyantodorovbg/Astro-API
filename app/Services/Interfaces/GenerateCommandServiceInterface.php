@@ -224,4 +224,15 @@ interface GenerateCommandServiceInterface
      * @return mixed
      */
     public function generateCommand(string $command, array $options = [], array $arguments = []);
+
+    /**
+     * Add values to an option
+     *
+     * @param $swetestOption
+     * @param array $parameterValuesData
+     * @param array $optionsValues
+     * @param string $parameterKey
+     * @return string
+     */
+    public function addOptionValues($swetestOption, array $parameterValuesData, array $optionsValues, string $parameterKey): string;
 }

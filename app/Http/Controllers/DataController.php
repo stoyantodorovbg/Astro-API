@@ -35,7 +35,7 @@ class DataController extends Controller
         $dataQueries = json_decode($request->dataQueries, true, 512, JSON_THROW_ON_ERROR);
         $data = [];
         foreach ($dataQueries as $dataQuery) {
-            $swetestOptions = $this->httpConnectorService->connectSwetestOptions($dataQuery);
+            $swetestOptions = $this->httpConnectorService->connectSwetestOptions($dataQuery, $this->generateCommandService);
 
             if (isset($swetestOptions['error'])) {
                 return response($swetestOptions['error'], 422);
@@ -50,6 +50,6 @@ class DataController extends Controller
             }
         }
 
-        return response($data, 200);
+        return response()->json(['data' => $data], 200);
     }
 }

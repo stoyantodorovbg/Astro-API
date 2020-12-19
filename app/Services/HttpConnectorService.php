@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Services\Interfaces\ConvertDateServiceInterface;
+use App\Services\Interfaces\GenerateCommandServiceInterface;
 use App\Services\Interfaces\HttpConnectorServiceInterface;
+use App\Services\Interfaces\ValidationServiceInterface;
 
 class HttpConnectorService implements HttpConnectorServiceInterface
 {
@@ -13,9 +15,10 @@ class HttpConnectorService implements HttpConnectorServiceInterface
      * Returns an array with key "error" when something when wrong
      *
      * @param array $options
+     * @param GenerateCommandServiceInterface $generateCommandService
      * @return array
      */
-    public function connectSwetestOptions(array $options): array
+    public function connectSwetestOptions(array $options, GenerateCommandServiceInterface $generateCommandService): array
     {
         $connectedOptions = [];
         $optionsKeys = config('swetest.httpMapping.optionsKeys');
@@ -23,49 +26,69 @@ class HttpConnectorService implements HttpConnectorServiceInterface
         $optionsValues = config('swetest.httpMapping.optionsValues');
 
         foreach ($options as $parameterKey => $parameterValues) {
-            // Check for Swetest parameters
-            if (array_key_exists($parameterKey, $optionsKeys) &&
-                ($swetestOption = $optionsKeys[$parameterKey]) &&
-                array_key_exists($swetestOption, $validationsOptions)
-            ) {
+            if (array_key_exists($parameterKey, $optionsKeys)) {
+                $swetestOption = $optionsKeys[$parameterKey];
+
+                // convert values
                 $parameterValuesData = explode(',', $parameterValues);
-                $processedParameterValue = '';
-                // Converts to Julian date
+
+                // validation
+                if ($error = resolve(ValidationServiceInterface::class)->validateSwetestOptions(
+                    $swetestOption,
+                    $parameterKey,
+                    $validationsOptions,
+                    $parameterValuesData)
+                ) {
+                    return $error;
+                }
+
+                // add option values
+                $optionValue = $generateCommandService->addOptionValues(
+                    $swetestOption,
+                    $parameterValuesData,
+                    $optionsValues,
+                    $parameterKey
+                );
+
+                // convert to Julian date
                 if ($swetestOption === 'bj') {
-                    $processedParameterValue = resolve(ConvertDateServiceInterface::class)->convertToJulianNumeric($parameterValues);
-                }
-                foreach ($parameterValuesData as $key => $parameterValue) {
-                   // dump($parameterValue);
-                    $dataValidationClasses = $validationsOptions[$swetestOption];
-
-                    // Check if there is a validation for the option
-                    foreach($dataValidationClasses as $dataValidationClass) {
-                        if ($dataValidationClass && array_key_exists($dataValidationClass, $optionsKeys)) {
-                            // Convert the HTTP option value to Swetest option value
-                            $parameterOptionValues = explode('-', $parameterValue);
-                            foreach ($parameterOptionValues as $parameterOptionValue) {
-                                //dd($optionsKeys, $parameterOptionValue, $swetestOption);
-                                $processedParameterValue .= $optionsValues[$parameterKey][$parameterValue];
-                            }
-
-                            // Validate Swetest option
-                            $dataValidationClass = ucfirst($dataValidationClass) . 'Validation';
-                            $dataValidation = resolve("\\App\\Services\\DataValidations\\$dataValidationClass");
-
-                            if (!$dataValidation->isValid($swetestOption)) {
-                                return [
-                                    'error' => "$parameterKey HTTP option has not valid value."
-                                ];
-                            }
-                        }
-                    }
+                    $optionValue = resolve(ConvertDateServiceInterface::class)->convertToJulianNumeric(
+                        $parameterValues
+                    );
                 }
 
-                // Swetest option name => Swetest option value
-                $connectedOptions[$swetestOption] = $processedParameterValue;
+                //add options values
+                $connectedOptions[$swetestOption] = $optionValue;
+
+                // add ut option because it is required for house option
+                if ($swetestOption === 'house') {
+                    $connectedOptions['ut'] = '';
+                }
             }
         }
 
         return $connectedOptions;
+    }
+
+    /**
+     * @param $swetestOption
+     * @param array $parameterValuesData
+     * @param \Illuminate\Config\Repository $optionsValues
+     * @param int $parameterKey
+     * @return string
+     */
+    protected function addOptionsValues($swetestOption, array $parameterValuesData, \Illuminate\Config\Repository $optionsValues, int $parameterKey): string
+    {
+        $optionValue = '';
+        $prefix = $swetestOption === 'house' || $swetestOption === 'topo' ? ',' : '';
+        foreach ($parameterValuesData as $parameter) {
+            if (isset($optionsValues[$parameterKey]) && isset($optionsValues[$parameterKey][$parameter])) {
+                $optionValue .= $optionsValues[$parameterKey][$parameter] . $prefix;
+            } else {
+                $optionValue .= $parameter . $prefix;
+            }
+        }
+
+        return $optionValue;
     }
 }

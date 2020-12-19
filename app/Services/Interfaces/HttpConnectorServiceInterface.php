@@ -12,7 +12,8 @@ interface HttpConnectorServiceInterface
      * Returns an array with key "error" when something when wrong
      *
      * @param array $options
+     * @param GenerateCommandServiceInterface $generateCommandService
      * @return array
      */
-    public function connectSwetestOptions(array $options): array;
+    public function connectSwetestOptions(array $options, GenerateCommandServiceInterface $generateCommandService): array;
 }

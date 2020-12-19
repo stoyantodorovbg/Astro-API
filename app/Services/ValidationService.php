@@ -43,4 +43,32 @@ class ValidationService implements ServiceInterface, ValidationServiceInterface
 
         return true;
     }
+
+    /**
+     * Validate Swetest options values
+     *
+     * @param string $swetestOption
+     * @param string $parameterKey
+     * @param array $validationsOptions
+     * @param array $parameterValuesData
+     * @return false|string[]
+     */
+    public function validateSwetestOptions(string $swetestOption, string $parameterKey, array $validationsOptions, array $parameterValuesData)
+    {
+        if (array_key_exists($swetestOption, $validationsOptions)) {
+            foreach ($validationsOptions[$swetestOption] as $key => $validation) {
+                if (isset($parameterValuesData[$validation]) &&
+                    ($className = ucfirst($validation)) &&
+                    ($dataValidation = resolve("\\App\\Services\\DataValidations\\$className")) &&
+                    !$dataValidation->isValid($parameterValuesData[$key])
+                ) {
+                    return [
+                        'error' => "$parameterKey parameter has not valid value."
+                    ];
+                }
+            }
+        }
+
+        return false;
+    }
 }
