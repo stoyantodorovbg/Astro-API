@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Services\Interfaces\ServiceInterface;
 use App\Services\Interfaces\ValidationServiceInterface;
+use PHPUnit\Exception;
 
 class ValidationService implements ServiceInterface, ValidationServiceInterface
 {
@@ -67,6 +68,27 @@ class ValidationService implements ServiceInterface, ValidationServiceInterface
                     ];
                 }
             }
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if an value is a valid json string
+     * Returns the asoc array value or false
+     *
+     * @param $value
+     * @return mixed
+     */
+    public function isJson($value)
+    {
+        try {
+            $data = json_decode($value, true, 512, JSON_THROW_ON_ERROR);
+            if (is_array($data)) {
+                return $data;
+            }
+        } catch (\JsonException $e) {
+            return false;
         }
 
         return false;

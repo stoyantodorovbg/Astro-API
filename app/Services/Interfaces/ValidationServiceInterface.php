@@ -33,4 +33,13 @@ interface ValidationServiceInterface
      * @return false|string[]
      */
     public function validateSwetestOptions(string $swetestOption, string $parameterKey, array $validationsOptions, array $parameterValuesData);
+
+    /**
+     * Check if an value is a valid json string
+     * Returns the asoc array value or false
+     *
+     * @param $value
+     * @return mixed
+     */
+    public function isJson($value);
 }

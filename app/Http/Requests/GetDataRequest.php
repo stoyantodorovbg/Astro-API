@@ -23,8 +23,6 @@ class GetDataRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            'dataQueries' => 'json'
-        ];
+        return [];
     }
 }
