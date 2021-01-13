@@ -79,7 +79,7 @@ class DataController extends Controller
             }
         }
 
-        return response()->json(['data' => $data], $this->status);
+        return response()->json($data, $this->status);
     }
 
     /**

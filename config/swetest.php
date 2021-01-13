@@ -30,7 +30,7 @@ return [
             'date'                   => 'bj',
             'planets'                => 'p',
             'houseTypes'             => 'house',
-            'sidereal'               => 'sid',
+            'siderealMethods'        => 'sid',
             'heliacal_events'        => 'hev',
             'location'               => 'topo',
             'heliocentric_positions' => 'hel',
@@ -84,7 +84,7 @@ return [
                 'regiomontanus'    => 'R',
             ],
             'siderealMethods' => [
-                'Babylonian-15-tau'             => '14',
+                'babylonian-15-tau'             => '14',
                 'valens'                        => '42',
                 'galactic-equator'              => '32',
                 'galactic-center-0-sagittarius' => '17',
