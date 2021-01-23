@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\GetDataRequest;
+use App\Services\Interfaces\FormatDataServiceInterface;
 use App\Services\Interfaces\ValidationServiceInterface;
 use App\Services\Interfaces\HttpConnectorServiceInterface;
 use App\Services\Interfaces\GenerateCommandServiceInterface;
@@ -30,20 +31,28 @@ class DataController extends Controller
     protected int $status = 200;
 
     /**
+     * @var FormatDataServiceInterface
+     */
+    protected FormatDataServiceInterface $formatDataService;
+
+    /**
      * DataController constructor.
      *
      * @param HttpConnectorServiceInterface $httpConnectorService
      * @param GenerateCommandServiceInterface $generateCommandService
      * @param ValidationServiceInterface $validationService
+     * @param FormatDataServiceInterface $formatDataService
      */
     public function __construct(HttpConnectorServiceInterface $httpConnectorService,
                                 GenerateCommandServiceInterface $generateCommandService,
-                                ValidationServiceInterface $validationService
+                                ValidationServiceInterface $validationService,
+                                FormatDataServiceInterface $formatDataService
     )
     {
         $this->httpConnectorService = $httpConnectorService;
         $this->generateCommandService = $generateCommandService;
         $this->validationService = $validationService;
+        $this->formatDataService = $formatDataService;
     }
 
     /**
@@ -78,6 +87,8 @@ class DataController extends Controller
                 $this->changeResponseStatus(422);
             }
         }
+
+        $data = $this->formatDataService->formatSwetestResult($data);
 
         return response()->json($data, $this->status);
     }
