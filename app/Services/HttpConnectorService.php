@@ -57,6 +57,11 @@ class HttpConnectorService implements HttpConnectorServiceInterface
                     );
                 }
 
+                // Process fixed star parameter
+                if ($swetestOption === 'xf' && isset($connectedOptions['p'])) {
+                    $connectedOptions['p'] .= 'f';
+                }
+
                 //add options values
                 $connectedOptions[$swetestOption] = $optionValue;
 

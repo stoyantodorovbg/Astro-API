@@ -60,7 +60,7 @@ return [
                 'true_lunar_node'       => 't',
                 'nutation'              => 'n',
                 'obliquity_of_ecliptic' => 'o',
-                'lilit'                 => 'A',
+                'lilith'                => 'A',
                 'earth'                 => 'C',
                 'ceres'                 => 'F',
                 'chiron'                => 'D',
