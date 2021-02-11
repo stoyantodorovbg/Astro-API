@@ -34,17 +34,27 @@ class HeliacalEventRepository implements HeliacalEventRepositoryInterface
      */
     public function getHeliacalEventCounts($date, Collection $cities, array $planetIds = [2, 3, 4, 5, 6, 7]): array
     {
+        $citiesIds = $cities->pluck(0, 'id')->toArray();
         $data = [];
+        $firstCityId = $cities->first()->id;
+        $lastCityId = $cities->last()->id;
+        foreach ($planetIds as $planetId) {
+            $citiesIdsCopy = $citiesIds;
 
-            foreach ($planetIds as $planetId) {
-                $data[$planetId] = [];
-                    $data[$planetId] = DB::table('heliacal_events')
-                    ->selectRaw('city_id, planet_id')
-                    ->whereRaw("planet_id = $planetId and expected_at > '$date'")
-                    ->whereIn('city_id', $cities->pluck('id')->toArray())
-                    ->groupByRaw('city_id, planet_id')
-                    ->pluck('planet_id', 'city_id')
-                    ->toArray();
+            $events = DB::table('heliacal_events')
+                ->selectRaw("city_id")
+                ->whereRaw("expected_at > '$date'
+                    and planet_id = $planetId
+                    and city_id >= $firstCityId
+                    and city_id <= $lastCityId")
+                ->groupByRaw('city_id')
+                ->pluck('city_id');
+
+            foreach ($events as $event) {
+                $citiesIdsCopy[$event] = 1;
+            }
+
+            $data[$planetId] = $citiesIdsCopy;
         }
 
         return $data;
