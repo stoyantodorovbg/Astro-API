@@ -2,10 +2,9 @@
 
 namespace App\Repositories;
 
-use App\Models\HeliacalEvent;
-use App\Repositories\Interfaces\HeliacalEventRepositoryInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use App\Repositories\Interfaces\HeliacalEventRepositoryInterface;
 
 class HeliacalEventRepository implements HeliacalEventRepositoryInterface
 {
@@ -40,19 +39,16 @@ class HeliacalEventRepository implements HeliacalEventRepositoryInterface
         $lastCityId = $cities->last()->id;
         foreach ($planetIds as $planetId) {
             $citiesIdsCopy = $citiesIds;
-
-            $events = DB::table('heliacal_events')
-                ->selectRaw("city_id")
+            DB::table('heliacal_events')
+                ->selectRaw('city_id')
                 ->whereRaw("expected_at > '$date'
                     and planet_id = $planetId
                     and city_id >= $firstCityId
                     and city_id <= $lastCityId")
-                ->groupByRaw('city_id')
-                ->pluck('city_id');
-
-            foreach ($events as $event) {
-                $citiesIdsCopy[$event] = 1;
-            }
+                ->pluck('city_id')
+            ->each(function ($item) use (&$citiesIdsCopy) {
+                 $citiesIdsCopy[$item] = 1;
+            });
 
             $data[$planetId] = $citiesIdsCopy;
         }

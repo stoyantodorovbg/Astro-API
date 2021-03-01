@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateHeliacalEventTypesTable extends Migration
+class CreatePlanetsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,10 @@ class CreateHeliacalEventTypesTable extends Migration
      */
     public function up()
     {
-        Schema::create('heliacal_event_types', function (Blueprint $table) {
-            $table->unsignedInteger('id')->autoIncrement();
+        Schema::create('planets', function (Blueprint $table) {
+            $table->unsignedTinyInteger('id')->autoIncrement();
             $table->string('name');
+            $table->string('code');
             $table->index('name');
         });
     }
@@ -27,6 +28,6 @@ class CreateHeliacalEventTypesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('heliacal_event_types');
+        Schema::dropIfExists('planets');
     }
 }

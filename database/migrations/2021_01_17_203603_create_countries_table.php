@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreatePlanetsTable extends Migration
+class CreateCountriesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,10 @@ class CreatePlanetsTable extends Migration
      */
     public function up()
     {
-        Schema::create('planets', function (Blueprint $table) {
-            $table->unsignedInteger('id')->autoIncrement();
-            $table->string('name');
-            $table->string('code');
-            $table->index('name');
+        Schema::create('countries', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name')->unique();
+            $table->boolean('status')->default(1);
         });
     }
 
@@ -28,6 +27,6 @@ class CreatePlanetsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('planets');
+        Schema::dropIfExists('countries');
     }
 }
