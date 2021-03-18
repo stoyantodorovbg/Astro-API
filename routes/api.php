@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DataController;
+use App\Http\Controllers\ApiTokenController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,4 +15,5 @@ use App\Http\Controllers\DataController;
 |
 */
 
-Route::get('/get-data', [DataController::class, 'getData']);
+Route::get('/get-data', [DataController::class, 'getData'])->middleware('check-api-token');
+Route::get('/get-api-token', [ApiTokenController::class, 'getApiToken'])->middleware(['domain-filter', 'get-api-token']);

@@ -88,6 +88,9 @@ class CalculateHeliacalEvents implements ShouldQueue
                     for ($i = 1; $i < $eventsCount; $i++) {
                         $data = explode(': ', $events[$i]);
                         $names = explode(' ', $data[0]);
+                        if ($names[0] === 'no') {
+                            continue;
+                        }
                         $eventsData[] = [
                             'planet_id'   => $this->planetsData[$names[0]]['id'],
                             'expected_at' => str_replace(['/', '   '], ['-', ' '], trim(explode('UT', $data[1])[0])),
@@ -166,14 +169,15 @@ class CalculateHeliacalEvents implements ShouldQueue
      */
     protected function fixDate(string $expectedAt)
     {
-        $expectedAt = str_replace(['/', '   '], ['-', ' '], $expectedAt);
         if (strpos($expectedAt, '24:00:00') !== false) {
             $expectedAt = explode('.', $expectedAt)[0];
             $expectedAt = str_replace('24:00:00', '00:00:00', $expectedAt);
             $expectedAt = Carbon::createFromFormat('Y-m-d H:i:s', $expectedAt);
+            logger('24:00:00 replaced into expected at');
 
             return $expectedAt->addDay()->toDateTimeString();
         }
+
         return $expectedAt;
     }
 

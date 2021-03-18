@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class GetDataRequest extends FormRequest
+class GetApiTokenRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,8 +24,8 @@ class GetDataRequest extends FormRequest
     public function rules()
     {
         return [
-            'email'     => 'required|email',
-            'api_token' => 'required|string|max:50'
+            'email'            => 'required|email',
+            'api_secret_token' => 'required|string|max:50'
         ];
     }
 }

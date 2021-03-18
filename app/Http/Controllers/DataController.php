@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Redis;
 use App\Http\Requests\GetDataRequest;
 use App\Services\Interfaces\FormatDataServiceInterface;
 use App\Services\Interfaces\ValidationServiceInterface;
@@ -63,6 +64,10 @@ class DataController extends Controller
      */
     public function getData(GetDataRequest $request)
     {
+        while (Redis::get('refreshing_api_token_' . $request->email)) {
+            sleep(2);
+        }
+
         if (! ($dataQueries = $this->validationService->isJson($request->dataQueries))) {
             $this->changeResponseStatus(422);
             return response()->json(['error' => 'Not valid data have been received.'], $this->status);
@@ -90,7 +95,7 @@ class DataController extends Controller
 
         $data = $this->formatDataService->formatSwetestResult($data);
 
-        return response()->json($data, $this->status);
+        return response(['data' => $data], 200);
     }
 
     /**

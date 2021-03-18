@@ -12,7 +12,7 @@ class City extends Model
     /**
      * @var string[]
      */
-    protected $fillable = ['name', 'lat', 'long', 'country_id'];
+    protected $fillable = ['name', 'lat', 'long', 'country_id', 'type'];
 
     /**
      * @var bool

@@ -35,18 +35,21 @@ class HeliacalEventTableSeeder extends Seeder
             ->pluck('id', 'name')
             ->toArray();
 
-        Date::whereRaw('id > 726585')->chunk(360, function ($dates) use ($dateService, $planetsData, $heliacalEventTypes, $eventRepo) {
+        Date::whereRaw("date > '2082-12-17'")->orderByRaw('date')->chunk(1000, function ($dates) use ($dateService, $planetsData, $heliacalEventTypes, $eventRepo) {
             foreach ($dates as $date) {
                 logger($date->date);
-                $cities = City::whereRaw('status = 1')->get();
+                $cities = City::whereRaw("country_id = 20 or type = 'primary'")->orderBy('id')->get();
+
                 $heliacalEventsData = $eventRepo->getHeliacalEventCounts($date->date, $cities);
                 $commandBase = 'swetest -bj' . $dateService->convertToJulianNumeric(Carbon::createFromFormat('Y-m-d H:i:s', $date->date . ' 00:00:01')) . ' -p';
-                $cities->chunk(1200)->each(function ($citiesChunk) use ($planetsData, $heliacalEventsData, $commandBase, $heliacalEventTypes) {
+
+                $cities->chunk(68)->each(function ($citiesChunk) use ($planetsData, $heliacalEventsData, $commandBase, $heliacalEventTypes) {
                     CalculateHeliacalEvents::dispatch($citiesChunk, $planetsData, $heliacalEventsData, $commandBase, $heliacalEventTypes);
                 });
 
                 while (DB::table('jobs')->count()) {
-                    sleep(3);
+                    usleep(400);
+//                    sleep(1);
                 }
             }
         });

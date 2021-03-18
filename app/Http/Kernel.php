@@ -42,7 +42,7 @@ class Kernel extends HttpKernel
         'api' => [
             'throttle:api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            \App\Http\Middleware\IpFilter::class,
+            //\App\Http\Middleware\IpFilter::class,
         ],
     ];
 
@@ -64,5 +64,7 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'domain-filter' => \App\Http\Middleware\IpFilter::class,
+        'get-api-token' => \App\Http\Middleware\GetApiToken::class,
+        'check-api-token' => \App\Http\Middleware\CheckApiToken::class,
     ];
 }

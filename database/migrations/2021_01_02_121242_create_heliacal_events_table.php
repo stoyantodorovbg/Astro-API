@@ -16,7 +16,7 @@ class CreateHeliacalEventsTable extends Migration
         Schema::create('heliacal_events', function (Blueprint $table) {
             $table->id();
             $table->dateTime('expected_at');
-            $table->string('visible_for', 20);
+            $table->string('visible_for', 12);
             $table->unsignedInteger('planet_id');
             $table->unsignedInteger('type_id');
             $table->unsignedBigInteger('city_id');
