@@ -4,7 +4,11 @@ namespace App\Services\DataFormats;
 
 class ArrayDataFormat extends AbstractDataFormat
 {
-
+    /**
+     * Get data in array format
+     *
+     * @return mixed
+     */
     public function getData()
     {
         if (is_array($this->data)) {

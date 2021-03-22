@@ -2,6 +2,8 @@
 
 namespace App\Repositories\Interfaces;
 
+use App\Models\City;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 interface HeliacalEventRepositoryInterface
@@ -25,4 +27,15 @@ interface HeliacalEventRepositoryInterface
      * @return array
      */
     public function getHeliacalEventCounts($date, Collection $cities, array $planetIds = [2, 3, 4, 5, 6, 7]): array;
+
+    /**
+     * Get heliacal events data for given city and date time
+     * Return Collection that contains HeliacalEvent distributed by planets
+     *
+     * @param City $city
+     * @param string $dateTime
+     *
+     * @return array
+     */
+    public function getHeliacalEventsData(City $city, string $dateTime): array;
 }

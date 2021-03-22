@@ -21,7 +21,7 @@ class FormatDataService implements ServiceInterface, FormatDataServiceInterface
      * @var array|string[]
      */
     protected array $redundantRowsKeys = [
-        'swetest', 'date', 'UT:', 'ET:', 'geo.', 'Epsilon', 'Nutation', 'Houses'
+        'swetest', 'date', 'UT:', 'ET:', 'geo.', 'Epsilon', 'Nutation', 'Houses', 'heliacalEvents'
     ];
 
     /**

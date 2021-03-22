@@ -2,8 +2,11 @@
 
 namespace App\Repositories;
 
+use App\Models\City;
+use App\Models\Planet;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use App\Repositories\Interfaces\HeliacalEventRepositoryInterface;
 
 class HeliacalEventRepository implements HeliacalEventRepositoryInterface
@@ -54,5 +57,48 @@ class HeliacalEventRepository implements HeliacalEventRepositoryInterface
         }
 
         return $data;
+    }
+
+    /**
+     * Get heliacal events data for given city and date time
+     * Return Collection that contains HeliacalEvent distributed by planets
+     *
+     * @param City $city
+     * @param string $dateTime
+     *
+     * @return array
+     */
+    public function getHeliacalEventsData(City $city, string $dateTime): array
+    {
+        if (Cache::has('heliacal_events_' . $city->name . $dateTime)) {
+            logger(111);
+            return Cache::get('heliacal_events_' . $city->name . $dateTime);
+        }
+
+        $helicalEvents = ['cityName' => $city->name, 'data' => []];
+        $planets = Planet::whereIn('id', [2, 3, 4, 5, 6, 7])->get();
+        foreach ($planets as $planet) {
+            $helicalEvents['data'][$planet->name] = DB::table('heliacal_events')
+                ->selectRaw('heliacal_events.expected_at, heliacal_event_types.name as type')
+                ->join('heliacal_event_types', 'heliacal_events.type_id', '=', 'heliacal_event_types.id')
+                ->whereRaw('planet_id = ' . $planet->id . ' and city_id = ' . $city->id . ' and expected_at <= "' . $dateTime . '"')
+                ->orderBy('expected_at', 'DESC')
+                ->limit(1)
+                ->get();
+
+            $helicalEvents['data'][$planet->name] = $helicalEvents['data'][$planet->name]->merge(DB::table('heliacal_events')
+                ->selectRaw('heliacal_events.expected_at, heliacal_event_types.name as type')
+                ->join('heliacal_event_types', 'heliacal_events.type_id', '=', 'heliacal_event_types.id')
+                ->whereRaw('planet_id = ' . $planet->id . ' and city_id = ' . $city->id . ' and expected_at > "' . $dateTime . '"')
+                ->orderBy('expected_at', 'ASC')
+                ->limit(3)
+                ->get());
+
+            $helicalEvents['data'][$planet->name] = $helicalEvents['data'][$planet->name]->toArray();
+        }
+
+        Cache::put('heliacal_events_' . $city->name . $dateTime, $helicalEvents);
+
+        return $helicalEvents;
     }
 }
