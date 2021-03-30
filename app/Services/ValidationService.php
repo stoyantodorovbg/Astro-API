@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Services\Interfaces\ServiceInterface;
 use App\Services\Interfaces\ValidationServiceInterface;
-use PHPUnit\Exception;
 
 class ValidationService implements ServiceInterface, ValidationServiceInterface
 {

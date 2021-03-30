@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\City;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Redis;
 use App\Http\Requests\GetDataRequest;
 use App\Services\Interfaces\FormatDataServiceInterface;
 use App\Services\Interfaces\ValidationServiceInterface;
+use App\Services\Interfaces\CalculateDataServiceInterface;
 use App\Services\Interfaces\HttpConnectorServiceInterface;
 use App\Services\Interfaces\GenerateCommandServiceInterface;
 use App\Repositories\Interfaces\HeliacalEventRepositoryInterface;
@@ -45,6 +45,11 @@ class DataController extends Controller
     protected $heliacalEventRepository;
 
     /**
+     * @var CalculateDataServiceInterface
+     */
+    protected $calculateDataService;
+
+    /**
      * DataController constructor.
      *
      * @param HttpConnectorServiceInterface $httpConnectorService
@@ -52,12 +57,14 @@ class DataController extends Controller
      * @param ValidationServiceInterface $validationService
      * @param FormatDataServiceInterface $formatDataService
      * @param HeliacalEventRepositoryInterface $heliacalEventRepository
+     * @param CalculateDataServiceInterface $calculateDataService
      */
     public function __construct(HttpConnectorServiceInterface $httpConnectorService,
                                 GenerateCommandServiceInterface $generateCommandService,
                                 ValidationServiceInterface $validationService,
                                 FormatDataServiceInterface $formatDataService,
-                                HeliacalEventRepositoryInterface $heliacalEventRepository
+                                HeliacalEventRepositoryInterface $heliacalEventRepository,
+                                CalculateDataServiceInterface $calculateDataService
     )
     {
         $this->httpConnectorService = $httpConnectorService;
@@ -65,6 +72,7 @@ class DataController extends Controller
         $this->validationService = $validationService;
         $this->formatDataService = $formatDataService;
         $this->heliacalEventRepository = $heliacalEventRepository;
+        $this->calculateDataService = $calculateDataService;
     }
 
     /**
@@ -85,6 +93,7 @@ class DataController extends Controller
 
         $data = [];
         $heliacalEventsData = [];
+        $tropicalMonthsData = [];
 
         foreach ($dataQueries as $key => $dataQuery) {
             $swetestOptions = $this->httpConnectorService->connectSwetestOptions($dataQuery, $this->generateCommandService);
@@ -102,12 +111,14 @@ class DataController extends Controller
                 $this->changeResponseStatus(422);
             }
             $heliacalEventsData[$key] = $this->addHeliacalEventsData($dataQuery);
+            $tropicalMonthsData[$key] = $this->calculateDataService->tropicalMonthsData($dataQuery);
         }
 
         $data = $this->formatDataService->formatSwetestResult($data);
 
         foreach ($data as $key => $item) {
             $data[$key]['heliacalEventsData'] = $heliacalEventsData[$key];
+            $data[$key]['tropicalMonthsData'] = $tropicalMonthsData[$key];
         }
 
         return response(['data' => $data], 200);

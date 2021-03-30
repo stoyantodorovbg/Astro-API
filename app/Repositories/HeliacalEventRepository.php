@@ -71,7 +71,6 @@ class HeliacalEventRepository implements HeliacalEventRepositoryInterface
     public function getHeliacalEventsData(City $city, string $dateTime): array
     {
         if (Cache::has('heliacal_events_' . $city->name . $dateTime)) {
-            logger(111);
             return Cache::get('heliacal_events_' . $city->name . $dateTime);
         }
 
