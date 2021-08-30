@@ -3,7 +3,7 @@
 namespace App\Repositories\Interfaces;
 
 use App\Models\City;
-use Illuminate\Support\Carbon;
+use Carbon\Carbon as BaseCarbon;
 use Illuminate\Support\Collection;
 
 interface HeliacalEventRepositoryInterface
@@ -38,4 +38,14 @@ interface HeliacalEventRepositoryInterface
      * @return array
      */
     public function getHeliacalEventsData(City $city, string $dateTime): array;
+
+    /**
+     * Get the next heliacal event for a certain planet, city and date
+     *
+     * @param int $planetId
+     * @param int $cityId
+     * @param Carbon $date
+     * @return mixed
+     */
+    public function getNextHeliacalEvent(int $planetId, int $cityId, BaseCarbon $date);
 }

@@ -4,6 +4,8 @@ namespace App\Repositories;
 
 use App\Models\City;
 use App\Models\Planet;
+use Illuminate\Support\Carbon;
+use Carbon\Carbon as BaseCarbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
@@ -99,5 +101,20 @@ class HeliacalEventRepository implements HeliacalEventRepositoryInterface
         Cache::put('heliacal_events_' . $city->name . $dateTime, $helicalEvents);
 
         return $helicalEvents;
+    }
+
+    /**
+     * Get the next heliacal event for a certain planet, city and date
+     *
+     * @param int $planetId
+     * @param int $cityId
+     * @param Carbon $date
+     * @return mixed
+     */
+    public function getNextHeliacalEvent(int $planetId, int $cityId, BaseCarbon $date)
+    {
+        return DB::table('heliacal_events')
+            ->whereRaw('planet_id = ' . $planetId . ' and city_id = ' . $cityId . ' and expected_at > "' . $date . '"')
+            ->first();
     }
 }

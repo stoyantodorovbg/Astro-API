@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Services\Interfaces\ServiceInterface;
 use App\Services\Interfaces\FormatDataServiceInterface;
 use App\Services\Interfaces\ValidationServiceInterface;
+use App\Services\Interfaces\CalculateDataServiceInterface;
 
 class FormatDataService implements ServiceInterface, FormatDataServiceInterface
 {
@@ -52,13 +53,48 @@ class FormatDataService implements ServiceInterface, FormatDataServiceInterface
      */
     public function formatSwetestResult(array $data): array
     {
-        $formattedData[] = [];
-        foreach ($data[0] as $key => $row) {
+        $formattedData = [];
+        foreach ($data as $row) {
             if (!in_array(explode(' ', $row)[0], $this->redundantRowsKeys, true)) {
-                $formattedData[0][] = preg_replace('/\s+/',' ', $row);
+                $formattedData[] = preg_replace('/\s+/',' ', $row);
             }
         }
 
         return $formattedData;
+    }
+
+    /**
+     * Format is night data for the API response
+     *
+     * @param $data
+     * @return bool|null
+     */
+    public function isNightResult($data): ?bool
+    {
+        $isNightData = [];
+        foreach ($data as $row) {
+            if (strpos($row, 'Sun') !== false) {
+                $isNightData['sun'] = str_replace(' ', '', $row);
+            }
+            if (strpos($row, 'house  1') !== false) {
+                $isNightData['house 1'] = str_replace(' ', '', $row);
+            }
+            if (strpos($row, 'house  7') !== false) {
+                $isNightData['house 7'] = str_replace(' ', '', $row);
+                break;
+            }
+        }
+
+        if (!isset($isNightData['house 1'], $isNightData['house 7'], $isNightData['sun'])) {
+            return null;
+        }
+
+        $calculateDataService = resolve(CalculateDataServiceInterface::class);
+
+        return $calculateDataService->isNight(
+            $calculateDataService->extractFloatFromText($isNightData['house 1'], ["'"], [['house1', '°'], ['', '.']]),
+            $calculateDataService->extractFloatFromText($isNightData['house 7'], ["'"], [['house7', '°'], ['', '.']]),
+            $calculateDataService->extractFloatFromText($isNightData['sun'], ["'"], [['Sun', '°'], ['', '.']])
+        );
     }
 }

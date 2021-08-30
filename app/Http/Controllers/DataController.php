@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Redis;
 use App\Http\Requests\GetDataRequest;
 use App\Services\Interfaces\FormatDataServiceInterface;
 use App\Services\Interfaces\ValidationServiceInterface;
+use App\Services\Interfaces\ExtractDataServiceInterface;
 use App\Services\Interfaces\CalculateDataServiceInterface;
 use App\Services\Interfaces\HttpConnectorServiceInterface;
 use App\Services\Interfaces\GenerateCommandServiceInterface;
@@ -50,6 +51,11 @@ class DataController extends Controller
     protected $calculateDataService;
 
     /**
+     * @var ExtractDataServiceInterface
+     */
+    protected ExtractDataServiceInterface $extractDataService;
+
+    /**
      * DataController constructor.
      *
      * @param HttpConnectorServiceInterface $httpConnectorService
@@ -64,7 +70,8 @@ class DataController extends Controller
                                 ValidationServiceInterface $validationService,
                                 FormatDataServiceInterface $formatDataService,
                                 HeliacalEventRepositoryInterface $heliacalEventRepository,
-                                CalculateDataServiceInterface $calculateDataService
+                                CalculateDataServiceInterface $calculateDataService,
+                                ExtractDataServiceInterface $extractDataService
     )
     {
         $this->httpConnectorService = $httpConnectorService;
@@ -73,6 +80,7 @@ class DataController extends Controller
         $this->formatDataService = $formatDataService;
         $this->heliacalEventRepository = $heliacalEventRepository;
         $this->calculateDataService = $calculateDataService;
+        $this->extractDataService = $extractDataService;
     }
 
     /**
@@ -94,6 +102,7 @@ class DataController extends Controller
         $data = [];
         $heliacalEventsData = [];
         $tropicalMonthsData = [];
+        $currentMoonMonth = '';
 
         foreach ($dataQueries as $key => $dataQuery) {
             $swetestOptions = $this->httpConnectorService->connectSwetestOptions($dataQuery, $this->generateCommandService);
@@ -103,6 +112,7 @@ class DataController extends Controller
             }
 
             $command = $this->generateCommandService->generateCommand('swetest', $swetestOptions);
+
             if ($command) {
                 exec($command, $output);
                 $data[$key] = $output;
@@ -110,15 +120,22 @@ class DataController extends Controller
                 $data[$key] = 'Not valid data have been received.';
                 $this->changeResponseStatus(422);
             }
-            $heliacalEventsData[$key] = $this->addHeliacalEventsData($dataQuery);
+
             $tropicalMonthsData[$key] = $this->calculateDataService->tropicalMonthsData($dataQuery);
-        }
 
-        $data = $this->formatDataService->formatSwetestResult($data);
+            $locationData = explode(',', $dataQuery['houseTypes']);
 
-        foreach ($data as $key => $item) {
-            $data[$key]['heliacalEventsData'] = $heliacalEventsData[$key];
-            $data[$key]['tropicalMonthsData'] = $tropicalMonthsData[$key];
+            if ($city = City::where('long', $locationData[0])->where('lat', $locationData[1])->first()) {
+                $isNight = $this->formatDataService->isNightResult($data[$key]);
+                $heliacalEventsData[$key] = $this->heliacalEventRepository->getHeliacalEventsData($city, $dataQuery['date']);
+                $currentMoonMonth = $this->calculateDataService->currentMoonMonth($city, $tropicalMonthsData[$key], $dataQuery, $isNight);
+            }
+
+            $data[$key] = $this->formatDataService->formatSwetestResult($data[$key]);
+            $data[$key]['heliacalEventsData'] = $heliacalEventsData[$key] ?? [];
+            $data[$key]['tropicalMonthsData'] = $tropicalMonthsData[$key] ?? [];
+            $data[$key]['currentMoonMonth'] = $currentMoonMonth ?? '';
+            $data[$key]['isNight'] = isset($isNight) ?  (string) (int) $isNight : '';
         }
 
         return response(['data' => $data], 200);
@@ -132,21 +149,5 @@ class DataController extends Controller
     protected function changeResponseStatus(int $status): void
     {
         $this->status = $status;
-    }
-
-    /**
-     * When there are relevant heliacal events data, adds it
-     *
-     * @param array $dataQuery
-     * @return array
-     */
-    protected function addHeliacalEventsData(array $dataQuery): array
-    {
-        $locationData = explode(',', $dataQuery['houseTypes']);
-        if ($city = City::where('long', $locationData[0])->where('lat', $locationData[1])->first()) {
-            return $this->heliacalEventRepository->getHeliacalEventsData($city, $dataQuery['date']);
-        }
-
-        return [];
     }
 }

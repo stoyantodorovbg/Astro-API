@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
-use App\Services\Interfaces\CalculateDataServiceInterface;
+use App\Models\City;
 use Illuminate\Support\Carbon;
+use App\Services\Interfaces\CalculateDataServiceInterface;
+use App\Repositories\Interfaces\HeliacalEventRepositoryInterface;
 
 class CalculateDataService implements CalculateDataServiceInterface
 {
@@ -14,7 +16,20 @@ class CalculateDataService implements CalculateDataServiceInterface
         'sidereal' => 25.03,
     ];
 
-    protected $baseEquinoxDate = '29-03-2021';
+    /**
+     * @var string
+     */
+    protected $baseEquinoxDate = '2021-03-20 00:00:00';
+
+    /**
+     * @var string
+     */
+    protected $baseEquinox = '-03-20 00:00:00';
+
+    /**
+     * @var HeliacalEventRepositoryInterface
+     */
+    protected $heliacalEventRepository;
 
     /**
      * Get positions of the tropical months for a given zodiacal system
@@ -48,5 +63,136 @@ class CalculateDataService implements CalculateDataServiceInterface
         }
 
         return $data;
+    }
+
+    /**
+     * Get current Moon month number
+     *
+     * @param City $city
+     * @param array $tropicalMonthsData
+     * @param array $dataQuery
+     * @param bool $isNight
+     * @return string
+     */
+    public function currentMoonMonth(City $city, array $tropicalMonthsData, array $dataQuery, bool $isNight): string
+    {
+        $heliacalEventRepository = $this->getHeliacalEventRepository();
+        $requestedDate = Carbon::createFromFormat('Y-m-d H:i:s', str_replace('T', ' ', $dataQuery['date']), 'UTC')->endOfDay();
+        $requestedYear = $requestedDate->year;
+
+        $moonYearBeginning = Carbon::createFromFormat('Y-m-d H:i:s', $this->getMoonYearBeginning($city, $requestedYear))->endOfDay();
+        if ($requestedDate->lessThan($moonYearBeginning)) {
+            $moonYearBeginning = Carbon::createFromFormat('Y-m-d H:i:s', $this->getMoonYearBeginning($city, $requestedYear -1))->endOfDay();
+        }
+
+        $month = 0;
+        for ($i = 0; $i < 12; $i++) {
+            $sameDate = $moonYearBeginning->equalTo($requestedDate);
+
+            if ($isNight && $sameDate) {
+                $month++;
+                break;
+            }
+
+            if ($sameDate || $moonYearBeginning->greaterThan($requestedDate)) {
+                break;
+            }
+
+            $moonYearBeginning->addDays(29);
+            $month++;
+            $heliacalEvent = $heliacalEventRepository->getNextHeliacalEvent(2, $city->id, $moonYearBeginning);
+
+            while (($heliacalEvent) && $heliacalEvent->type_id === 3 && $moonYearBeginning->lessThan(Carbon::parse($heliacalEvent->expected_at)->endOfDay())) {
+                $moonYearBeginning->addDay();
+                $heliacalEvent = $heliacalEventRepository->getNextHeliacalEvent(2, $city->id, $moonYearBeginning);
+            }
+        }
+
+        $month = $month >= 1 ? $month : 12;
+
+        return (string) $month;
+    }
+
+    /**
+     * Get the beginning of Moon year
+     *
+     * @param City $city
+     * @param int $year
+     * @return string
+     */
+    public function getMoonYearBeginning(City $city, int $year): string
+    {
+        $month = 3;
+
+        while (!($date = $this->searchForMoonYearBeginning($city, $year, $month))) {
+            $month++;
+        }
+
+        return $date;
+    }
+
+    /**
+     * Check if the horoscope is night
+     *
+     * @param float $asc
+     * @param float $desc
+     * @param float $sun
+     * @return bool
+     */
+    public function isNight(float $asc, float $desc, float $sun): bool
+    {
+        if (($asc < $desc && $sun > $asc && $sun < $desc) ||
+            ($asc > $desc &&
+                (($sun > $asc && $sun > $desc) || ($sun < $desc && $sun < $asc))
+            )
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Search for the beginning of Moon year
+     *
+     * @param City $city
+     * @param int $year
+     * @param int $month
+     * @return false|mixed|string
+     */
+    protected function searchForMoonYearBeginning(City $city, int $year, int $month = 3)
+    {
+        $heliacalEventRepository = $this->getHeliacalEventRepository();
+        $date = Carbon::createFromDate($year, $month, 1);
+        $heliacalEventData = $heliacalEventRepository->getHeliacalEventsData($city, $date);
+        $baseEquinoxDate = $year . $this->baseEquinox;
+
+        if (!isset($heliacalEventData['data']) || !isset($heliacalEventData['data']['Moon'])) {
+
+            return false;
+        }
+
+        foreach ($heliacalEventData['data']['Moon'] as $event) {
+            if ($event->type === 'evening first' && $event->expected_at > $baseEquinoxDate) {
+
+                return $event->expected_at;
+            }
+        }
+
+        return false;
+    }
+
+    protected function getHeliacalEventRepository()
+    {
+        if (!$this->heliacalEventRepository) {
+            $this->setHeliacalEventRepository();
+        }
+
+        return $this->heliacalEventRepository;
+    }
+
+    protected function setHeliacalEventRepository()
+    {
+        $this->heliacalEventRepository = resolve(HeliacalEventRepositoryInterface::class);
     }
 }

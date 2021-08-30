@@ -8,6 +8,7 @@ class ArrayDataFormat extends AbstractDataFormat
      * Get data in array format
      *
      * @return mixed
+     * @throws \JsonException
      */
     public function getData()
     {
@@ -15,17 +16,16 @@ class ArrayDataFormat extends AbstractDataFormat
             return $this->data;
         }
 
-        if (($data = json_decode($this->data, true)) && json_last_error() === JSON_ERROR_NONE) {
+        if (($data = json_decode($this->data, true, 512, JSON_THROW_ON_ERROR)) && json_last_error() === JSON_ERROR_NONE) {
             return $data;
         }
 
         if (is_string($this->data)) {
             $data = explode("\n", $this->data);
-            $data = array_filter($data, function ($element) {
+
+            return array_filter($data, function ($element) {
                 return $element !== '';
             });
-
-            return $data;
         }
 
         return false;
