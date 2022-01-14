@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Services\Interfaces\ServiceInterface;
 use App\Services\Interfaces\FormatDataServiceInterface;
 use App\Services\Interfaces\ValidationServiceInterface;
+use App\Services\Interfaces\ExtractDataServiceInterface;
 use App\Services\Interfaces\CalculateDataServiceInterface;
 
 class FormatDataService implements ServiceInterface, FormatDataServiceInterface
@@ -90,11 +91,12 @@ class FormatDataService implements ServiceInterface, FormatDataServiceInterface
         }
 
         $calculateDataService = resolve(CalculateDataServiceInterface::class);
+        $extractDataService = resolve(ExtractDataServiceInterface::class);
 
         return $calculateDataService->isNight(
-            $calculateDataService->extractFloatFromText($isNightData['house 1'], ["'"], [['house1', '°'], ['', '.']]),
-            $calculateDataService->extractFloatFromText($isNightData['house 7'], ["'"], [['house7', '°'], ['', '.']]),
-            $calculateDataService->extractFloatFromText($isNightData['sun'], ["'"], [['Sun', '°'], ['', '.']])
+            $extractDataService->floatFromText($isNightData['house 1'], ["'"], [['house1', '°'], ['', '.']]),
+            $extractDataService->floatFromText($isNightData['house 7'], ["'"], [['house7', '°'], ['', '.']]),
+            $extractDataService->floatFromText($isNightData['sun'], ["'"], [['Sun', '°'], ['', '.']])
         );
     }
 }

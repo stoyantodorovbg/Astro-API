@@ -18,12 +18,11 @@ interface CalculateDataServiceInterface
      * Get current Moon month number
      *
      * @param City $city
-     * @param array $tropicalMonthsData
      * @param array $dataQuery
      * @param bool $isNight
      * @return string
      */
-    public function currentMoonMonth(City $city,array $tropicalMonthsData, array $dataQuery, bool $isNight): string;
+    public function currentMoonMonth(City $city, array $dataQuery, bool $isNight): string;
 
     /**
      * Check if the horoscope is night
@@ -43,4 +42,13 @@ interface CalculateDataServiceInterface
      * @return string
      */
     public function getMoonYearBeginning(City $city, int $year): string;
+
+    /**
+     * Get current Moon day number
+     *
+     * @param City $city
+     * @param array $dataQuery
+     * @return int|null
+     */
+    public function currentMoonDay(City $city, array $dataQuery);
 }

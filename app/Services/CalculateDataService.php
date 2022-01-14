@@ -32,6 +32,11 @@ class CalculateDataService implements CalculateDataServiceInterface
     protected $heliacalEventRepository;
 
     /**
+     * @var Carbon
+     */
+    protected $requestedDate;
+
+    /**
      * Get positions of the tropical months for a given zodiacal system
      *
      * @param array $dataQuery
@@ -69,15 +74,14 @@ class CalculateDataService implements CalculateDataServiceInterface
      * Get current Moon month number
      *
      * @param City $city
-     * @param array $tropicalMonthsData
      * @param array $dataQuery
      * @param bool $isNight
      * @return string
      */
-    public function currentMoonMonth(City $city, array $tropicalMonthsData, array $dataQuery, bool $isNight): string
+    public function currentMoonMonth(City $city, array $dataQuery, bool $isNight): string
     {
         $heliacalEventRepository = $this->getHeliacalEventRepository();
-        $requestedDate = Carbon::createFromFormat('Y-m-d H:i:s', str_replace('T', ' ', $dataQuery['date']), 'UTC')->endOfDay();
+        $requestedDate = $this->getRequestedDayAsCarbon($dataQuery['date'])->copy()->endOfDay();
         $requestedYear = $requestedDate->year;
 
         $moonYearBeginning = Carbon::createFromFormat('Y-m-d H:i:s', $this->getMoonYearBeginning($city, $requestedYear))->endOfDay();
@@ -132,6 +136,28 @@ class CalculateDataService implements CalculateDataServiceInterface
     }
 
     /**
+     * Get current Moon day number
+     *
+     * @param City $city
+     * @param array $dataQuery
+     * @return int|null
+     */
+    public function currentMoonDay(City $city, array $dataQuery)
+    {
+        $heliacalEventRepository = $this->getHeliacalEventRepository();
+        $requestedDate = $this->getRequestedDayAsCarbon($dataQuery['date']);
+
+        if ($lastEveningFirst = $heliacalEventRepository->getLastHeliacalEvent( 2, $city->id, 3, $requestedDate)) {
+            $lastEveningFirstDate = Carbon::createFromDate($lastEveningFirst->expected_at);
+
+            return $lastEveningFirstDate->diffInDays($requestedDate) + 1;
+        }
+
+        return null;
+
+    }
+
+    /**
      * Check if the horoscope is night
      *
      * @param float $asc
@@ -182,6 +208,11 @@ class CalculateDataService implements CalculateDataServiceInterface
         return false;
     }
 
+    /**
+     * Get Heliacal event repository
+     *
+     * @return HeliacalEventRepositoryInterface
+     */
     protected function getHeliacalEventRepository()
     {
         if (!$this->heliacalEventRepository) {
@@ -191,8 +222,39 @@ class CalculateDataService implements CalculateDataServiceInterface
         return $this->heliacalEventRepository;
     }
 
+    /**
+     * Set Heliacal event repository
+     *
+     * @return void
+     */
     protected function setHeliacalEventRepository()
     {
         $this->heliacalEventRepository = resolve(HeliacalEventRepositoryInterface::class);
+    }
+
+    /**
+     * Get requested date as Carbon instance
+     *
+     * @param string $date
+     * @return Carbon
+     */
+    protected function getRequestedDayAsCarbon(string $date)
+    {
+        if (!$this->requestedDate) {
+            $this->setRequestedDayAsCarbon($date);
+        }
+
+        return $this->requestedDate;
+    }
+
+    /**
+     * Set requested date as Carbon instance
+     *
+     * @param string $date
+     * @return void
+     */
+    protected function setRequestedDayAsCarbon(string $date)
+    {
+        $this->requestedDate = Carbon::createFromFormat('Y-m-d H:i:s', str_replace('T', ' ', $date), 'UTC');
     }
 }

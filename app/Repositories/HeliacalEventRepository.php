@@ -104,7 +104,7 @@ class HeliacalEventRepository implements HeliacalEventRepositoryInterface
     }
 
     /**
-     * Get the next heliacal event for a certain planet, city and date
+     * Get the next heliacal event by given planet, city and date
      *
      * @param int $planetId
      * @param int $cityId
@@ -115,6 +115,23 @@ class HeliacalEventRepository implements HeliacalEventRepositoryInterface
     {
         return DB::table('heliacal_events')
             ->whereRaw('planet_id = ' . $planetId . ' and city_id = ' . $cityId . ' and expected_at > "' . $date . '"')
+            ->first();
+    }
+
+    /**
+     * Get the last heliacal event by given type, planet, city and date
+     *
+     * @param int $planetId
+     * @param int $cityId
+     * @param int $typeId
+     * @param BaseCarbon $date
+     * @return \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Query\Builder|object|null
+     */
+    public function getLastHeliacalEvent(int $planetId, int $cityId, int $typeId, BaseCarbon $date)
+    {
+        return DB::table('heliacal_events')
+            ->whereRaw('planet_id = ' . $planetId . ' and city_id = ' . $cityId . ' and type_id = ' . $typeId . ' and expected_at <= "' . $date . '"')
+            ->orderByRaw('expected_at desc')
             ->first();
     }
 }

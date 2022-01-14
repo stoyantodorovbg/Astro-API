@@ -128,7 +128,8 @@ class DataController extends Controller
             if ($city = City::where('long', $locationData[0])->where('lat', $locationData[1])->first()) {
                 $isNight = $this->formatDataService->isNightResult($data[$key]);
                 $heliacalEventsData[$key] = $this->heliacalEventRepository->getHeliacalEventsData($city, $dataQuery['date']);
-                $currentMoonMonth = $this->calculateDataService->currentMoonMonth($city, $tropicalMonthsData[$key], $dataQuery, $isNight);
+                $currentMoonMonth = $this->calculateDataService->currentMoonMonth($city, $dataQuery, $isNight);
+                $currentMoonDay = $this->calculateDataService->currentMoonDay($city, $dataQuery);
             }
 
             $data[$key] = $this->formatDataService->formatSwetestResult($data[$key]);
@@ -136,6 +137,7 @@ class DataController extends Controller
             $data[$key]['tropicalMonthsData'] = $tropicalMonthsData[$key] ?? [];
             $data[$key]['currentMoonMonth'] = $currentMoonMonth ?? '';
             $data[$key]['isNight'] = isset($isNight) ?  (string) (int) $isNight : '';
+            $data[$key]['currentMoonDay'] = isset($currentMoonDay) ? (string) $currentMoonDay: '';
         }
 
         return response(['data' => $data], 200);

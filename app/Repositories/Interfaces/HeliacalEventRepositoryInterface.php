@@ -40,7 +40,7 @@ interface HeliacalEventRepositoryInterface
     public function getHeliacalEventsData(City $city, string $dateTime): array;
 
     /**
-     * Get the next heliacal event for a certain planet, city and date
+     * Get the next heliacal event by given type, planet, city and date
      *
      * @param int $planetId
      * @param int $cityId
@@ -48,4 +48,15 @@ interface HeliacalEventRepositoryInterface
      * @return mixed
      */
     public function getNextHeliacalEvent(int $planetId, int $cityId, BaseCarbon $date);
+
+    /**
+     * Get the last heliacal event by given type, planet, city and date
+     *
+     * @param int $planetId
+     * @param int $cityId
+     * @param int $typeId
+     * @param BaseCarbon $date
+     * @return \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Query\Builder|object|null
+     */
+    public function getLastHeliacalEvent(int $planetId, int $cityId, int $typeId, BaseCarbon $date);
 }

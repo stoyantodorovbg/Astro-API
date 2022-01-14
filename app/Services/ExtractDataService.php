@@ -16,7 +16,7 @@ class ExtractDataService implements ExtractDataServiceInterface
      * @param array $replacements
      * @return float
      */
-    public function extractFloatFromText(string $text, array $delimiters, array $replacements): float
+    public function floatFromText(string $text, array $delimiters, array $replacements): float
     {
         foreach ($delimiters as $delimiter) {
             $data = explode($delimiter, $text);
