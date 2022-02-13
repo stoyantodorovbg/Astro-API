@@ -122,11 +122,10 @@ class DataController extends Controller
             }
 
             $tropicalMonthsData[$key] = $this->calculateDataService->tropicalMonthsData($dataQuery);
-
             $locationData = explode(',', $dataQuery['houseTypes']);
+            $isNight = $this->formatDataService->isNightResult($data[$key]);
 
             if ($city = City::where('long', $locationData[0])->where('lat', $locationData[1])->first()) {
-                $isNight = $this->formatDataService->isNightResult($data[$key]);
                 $heliacalEventsData[$key] = $this->heliacalEventRepository->getHeliacalEventsData($city, $dataQuery['date']);
                 $currentMoonMonth = $this->calculateDataService->currentMoonMonth($city, $dataQuery, $isNight);
                 $currentMoonDay = $this->calculateDataService->currentMoonDay($city, $dataQuery);

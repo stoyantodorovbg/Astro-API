@@ -194,13 +194,11 @@ class CalculateDataService implements CalculateDataServiceInterface
         $baseEquinoxDate = $year . $this->baseEquinox;
 
         if (!isset($heliacalEventData['data']) || !isset($heliacalEventData['data']['Moon'])) {
-
             return false;
         }
 
         foreach ($heliacalEventData['data']['Moon'] as $event) {
             if ($event->type === 'evening first' && $event->expected_at > $baseEquinoxDate) {
-
                 return $event->expected_at;
             }
         }
