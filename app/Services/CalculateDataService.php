@@ -84,7 +84,11 @@ class CalculateDataService implements CalculateDataServiceInterface
         $requestedDate = $this->getRequestedDayAsCarbon($dataQuery['date'])->copy()->endOfDay();
         $requestedYear = $requestedDate->year;
 
-        $moonYearBeginning = Carbon::createFromFormat('Y-m-d H:i:s', $this->getMoonYearBeginning($city, $requestedYear))->endOfDay();
+        if (!$moonYearBeginning = $this->getMoonYearBeginning($city, $requestedYear)) {
+            return '';
+        }
+
+        $moonYearBeginning = Carbon::createFromFormat('Y-m-d H:i:s', $moonYearBeginning)->endOfDay();
         if ($requestedDate->lessThan($moonYearBeginning)) {
             $moonYearBeginning = Carbon::createFromFormat('Y-m-d H:i:s', $this->getMoonYearBeginning($city, $requestedYear -1))->endOfDay();
         }
@@ -130,6 +134,9 @@ class CalculateDataService implements CalculateDataServiceInterface
 
         while (!($date = $this->searchForMoonYearBeginning($city, $year, $month))) {
             $month++;
+            if ($month > 12) {
+                return false;
+            }
         }
 
         return $date;
